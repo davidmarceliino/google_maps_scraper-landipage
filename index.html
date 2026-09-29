@@ -1,0 +1,2960 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Buscador de Empresas no Google Maps — a lista com telefone, pronta
+    </title>
+    <meta
+      name="description"
+      content="Digite o segmento e a cidade. O buscador lê o Google Maps, joga fora quem não tem telefone, remove duplicata e entrega em Excel. Sem API key. R$ 29,90 uma vez."
+    />
+    <meta name="theme-color" content="#F7F6F2" />
+    <meta
+      property="og:title"
+      content="Buscador de Empresas no Google Maps — a lista com telefone, pronta"
+    />
+    <meta
+      property="og:description"
+      content="Sem API key, sem instalar nada, sem assinatura. Um pagamento de R$ 29,90 e o programa é seu."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* =========================================================================
+   1. TOKENS
+   ========================================================================= */
+      :root {
+        /* papel — branco frio, não creme */
+        --paper: #f7f6f2;
+        --paper-2: #ffffff;
+        --paper-3: #efede6;
+
+        /* tinta */
+        --ink: #131519;
+        --ink-2: #2a2f37;
+        --muted: #4f5764;
+        --dim: #69717e;
+
+        /* réguas */
+        --rule: #ddd9cf;
+        --rule-2: #e9e6de;
+
+        /* acentos */
+        --green: #25d366; /* preenchimento de botão (marca) */
+        --green-deep: #0e7a43; /* verde sobre papel */
+        --green-wash: rgba(14, 122, 67, 0.08);
+        --blue: #1a3fd9; /* sublinhado editorial / link */
+        --blue-wash: rgba(26, 63, 217, 0.07);
+        --amber: #b8791a; /* preço, sparingly */
+        --amber-wash: rgba(184, 121, 26, 0.1);
+        --red: #b3382e; /* o que está errado hoje */
+
+        /* tipografia */
+        --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+        --body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+        --mono: "Space Mono", "Consolas", monospace;
+
+        /* forma */
+        --r: 4px;
+        --r-md: 8px;
+        --wrap: 1240px;
+        --gut: clamp(20px, 5vw, 48px);
+
+        /* movimento */
+        --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+        --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--body);
+        font-size: 17px;
+        line-height: 1.62;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+      img,
+      svg {
+        display: block;
+        max-width: 100%;
+      }
+      a {
+        color: inherit;
+      }
+      ::selection {
+        background: var(--green);
+        color: #06170d;
+      }
+      :focus-visible {
+        outline: 2.5px solid var(--blue);
+        outline-offset: 3px;
+        border-radius: 2px;
+      }
+
+      .wrap {
+        width: 100%;
+        max-width: var(--wrap);
+        margin: 0 auto;
+        padding: 0 var(--gut);
+      }
+      section {
+        padding: clamp(76px, 10vw, 140px) 0;
+      }
+      .rule {
+        border-top: 1px solid var(--rule);
+      }
+
+      /* =========================================================================
+   2. TIPOGRAFIA
+   ========================================================================= */
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: var(--display);
+        font-weight: 700;
+        letter-spacing: -0.035em;
+        line-height: 1.02;
+        margin: 0;
+        font-variation-settings: "opsz" 96;
+      }
+      h1 {
+        font-size: clamp(38px, 5.6vw, 76px);
+        letter-spacing: -0.045em;
+      }
+      h2 {
+        font-size: clamp(30px, 4.2vw, 54px);
+        letter-spacing: -0.04em;
+      }
+      h3 {
+        font-size: clamp(19px, 2vw, 23px);
+        letter-spacing: -0.025em;
+        line-height: 1.18;
+      }
+      h4 {
+        font-size: 17px;
+        letter-spacing: -0.02em;
+        line-height: 1.25;
+      }
+      p {
+        margin: 0;
+      }
+
+      .lede {
+        font-size: clamp(17.5px, 1.9vw, 21px);
+        line-height: 1.55;
+        color: var(--ink-2);
+        max-width: 56ch;
+      }
+      .micro {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--dim);
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-family: var(--mono);
+        font-size: 11.5px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--green-deep);
+        margin-bottom: 26px;
+      }
+      .eyebrow::before {
+        content: "";
+        width: 26px;
+        height: 2px;
+        background: var(--green);
+        flex: none;
+      }
+      .mark {
+        background: linear-gradient(transparent 62%, var(--blue-wash) 62%);
+        padding: 0 2px;
+      }
+      .strong {
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      /* largura de texto por seção */
+      .measure {
+        max-width: 16ch;
+      }
+      .sec-head {
+        max-width: min(100%, 780px);
+      }
+      .sec-head .lede {
+        margin-top: 24px;
+      }
+
+      /* =========================================================================
+   3. BOTÕES
+   ========================================================================= */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 15px 26px;
+        border: 1.5px solid var(--ink);
+        border-radius: var(--r);
+        background: var(--ink);
+        color: #fff;
+        font-family: var(--body);
+        font-size: 15.5px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        text-decoration: none;
+        cursor: pointer;
+        transition:
+          background-color 0.16s var(--ease),
+          color 0.16s var(--ease),
+          border-color 0.16s var(--ease),
+          transform 0.16s var(--ease),
+          box-shadow 0.16s var(--ease);
+      }
+      .btn svg {
+        flex: none;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -12px rgba(0, 0, 0, 0.5);
+      }
+      .btn--wa {
+        background: var(--green);
+        border-color: var(--green);
+        color: #04240f;
+      }
+      .btn--wa:hover {
+        background: #1fbe5a;
+      }
+      .btn--line {
+        background: transparent;
+        color: var(--ink);
+      }
+      .btn--line:hover {
+        background: var(--ink);
+        color: #fff;
+      }
+      .btn--sm {
+        padding: 10px 16px;
+        font-size: 14px;
+      }
+      .btn--lg {
+        padding: 18px 30px;
+        font-size: 16.5px;
+      }
+      .btn--block {
+        width: 100%;
+      }
+
+      /* =========================================================================
+   4. HEADER
+   ========================================================================= */
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 60;
+        background: rgba(247, 246, 242, 0.9);
+        backdrop-filter: blur(12px) saturate(1.4);
+        -webkit-backdrop-filter: blur(12px) saturate(1.4);
+        border-bottom: 1px solid var(--rule);
+      }
+      .nav__in {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        height: 70px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        text-decoration: none;
+        font-family: var(--display);
+        font-weight: 800;
+        font-size: 17px;
+        letter-spacing: -0.035em;
+        line-height: 1;
+      }
+      .brand__mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        flex: none;
+        background: var(--ink);
+        display: grid;
+        place-items: center;
+        color: var(--green);
+      }
+      .brand em {
+        font-style: normal;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--dim);
+        display: block;
+        margin-top: 4px;
+      }
+      .nav__links {
+        display: flex;
+        gap: 30px;
+        margin-left: auto;
+      }
+      .nav__links a {
+        font-size: 14.5px;
+        font-weight: 500;
+        color: var(--muted);
+        text-decoration: none;
+        position: relative;
+      }
+      .nav__links a::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -5px;
+        width: 100%;
+        height: 1.5px;
+        background: var(--ink);
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 0.22s var(--ease);
+      }
+      .nav__links a:hover {
+        color: var(--ink);
+      }
+      .nav__links a:hover::after {
+        transform: scaleX(1);
+        transform-origin: left;
+      }
+
+      /* =========================================================================
+   5. HERO
+   ========================================================================= */
+      .hero {
+        padding-top: clamp(52px, 7vw, 86px);
+        padding-bottom: clamp(56px, 7vw, 88px);
+      }
+      .hero h1 {
+        max-width: min(100%, 1080px);
+      }
+      .hero h1 em {
+        font-style: normal;
+        display: block;
+        color: var(--green-deep);
+        position: relative;
+        width: max-content;
+        max-width: 100%;
+      }
+      .hero h1 em::after {
+        content: "";
+        position: absolute;
+        left: -0.02em;
+        right: -0.02em;
+        bottom: 0.02em;
+        height: 0.14em;
+        background: var(--green);
+        z-index: -1;
+        opacity: 0.28;
+      }
+      .hero__row {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+        gap: clamp(32px, 5vw, 72px);
+        align-items: end;
+        margin-top: 32px;
+      }
+      .hero__ctas {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+      }
+      .hero__micro {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 22px;
+        margin-top: 26px;
+        list-style: none;
+        padding: 0;
+      }
+      .hero__micro li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .hero__micro li::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        background: var(--green);
+        border-radius: 50%;
+        flex: none;
+      }
+
+      .price-chip {
+        border: 1.5px solid var(--ink);
+        border-radius: var(--r-md);
+        padding: 20px 22px;
+        background: var(--paper-2);
+      }
+      .price-chip .micro {
+        display: block;
+        margin-bottom: 8px;
+      }
+      .price-chip b {
+        font-family: var(--display);
+        font-size: 44px;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+        line-height: 0.9;
+        display: block;
+      }
+      .price-chip em {
+        font-style: normal;
+        font-size: 13.5px;
+        color: var(--muted);
+        display: block;
+        margin-top: 10px;
+        line-height: 1.4;
+      }
+
+      /* ---------- o produto: peça central da página ---------- */
+      .product {
+        margin-top: clamp(46px, 6vw, 72px);
+      }
+      .product__cap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 26px;
+        align-items: baseline;
+        margin-top: 16px;
+        font-size: 14.5px;
+        color: var(--muted);
+        border-top: 1px solid var(--rule-2);
+        padding-top: 14px;
+      }
+      /* dica de scroll lateral da tabela (só no celular) */
+      .dt-swipe {
+        display: none;
+        align-items: center;
+        gap: 7px;
+        margin-top: 12px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .dt-swipe svg {
+        flex: none;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.7;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      @media (max-width: 700px) {
+        .dt-swipe {
+          display: flex;
+        }
+      }
+      .product__cap b {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .product__cap .sp {
+        margin-left: auto;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--dim);
+      }
+
+      .win {
+        border: 1.5px solid var(--ink);
+        border-radius: 10px;
+        overflow: hidden;
+        background: var(--paper-2);
+        box-shadow: 14px 14px 0 -2px var(--paper-3);
+      }
+      .win__bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 16px;
+        background: var(--paper-3);
+        border-bottom: 1px solid var(--rule);
+      }
+      .win__bar i {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #cfcbc2;
+        display: block;
+      }
+      .win__bar i:nth-child(3) {
+        margin-left: 6px;
+      }
+      .win__url {
+        margin-left: 14px;
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: var(--muted);
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        padding: 3px 14px;
+        border-radius: 100px;
+      }
+      .win__body {
+        padding: clamp(16px, 2.4vw, 24px);
+      }
+
+      /* barra de filtros */
+      .tools {
+        display: grid;
+        grid-template-columns: 1.5fr 1.1fr 0.6fr;
+        gap: 10px;
+      }
+      .fld {
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        border-radius: var(--r-md);
+        padding: 9px 13px;
+      }
+      .fld span {
+        display: block;
+        font-family: var(--mono);
+        font-size: 9.5px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--dim);
+        margin-bottom: 4px;
+      }
+      .fld b {
+        font-family: var(--body);
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .tools__btns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+        align-items: center;
+      }
+      .tb {
+        font-family: var(--body);
+        font-size: 13.5px;
+        font-weight: 600;
+        padding: 8px 16px;
+        border-radius: var(--r);
+        border: 1.5px solid var(--ink);
+        background: var(--green);
+        color: #04240f;
+      }
+      .tb--off {
+        background: transparent;
+        border-color: var(--rule);
+        color: var(--dim);
+      }
+      .tb--out {
+        background: transparent;
+        border-color: var(--ink);
+        color: var(--ink);
+      }
+      .tb--off--off {
+        border-color: transparent;
+        background: transparent;
+        color: var(--dim);
+        padding: 8px 4px;
+      }
+      .tag {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        letter-spacing: 0.05em;
+        padding: 5px 11px;
+        border-radius: 100px;
+        border: 1px solid var(--rule);
+        color: var(--muted);
+        background: var(--paper);
+      }
+      .tag--g {
+        color: var(--green-deep);
+        border-color: rgba(14, 122, 67, 0.3);
+        background: var(--green-wash);
+      }
+
+      /* barra de progresso + contadores */
+      .live {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin: 20px 0 14px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .live__track {
+        flex: 1 1 180px;
+        min-width: 140px;
+        height: 6px;
+        background: var(--paper-3);
+        border-radius: 100px;
+        overflow: hidden;
+      }
+      .live__fill {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: var(--green-deep);
+        border-radius: 100px;
+        transition: width 0.55s var(--ease);
+      }
+      .live__n {
+        white-space: nowrap;
+        color: var(--ink);
+      }
+      .live__n b {
+        color: var(--green-deep);
+      }
+
+      /* tabela */
+      .sheet {
+        border: 1px solid var(--rule);
+        border-radius: var(--r-md);
+        overflow: hidden;
+      }
+      .sheet__h,
+      .sheet__r {
+        display: grid;
+        grid-template-columns: 1.75fr 1.15fr 0.8fr 0.85fr 0.6fr;
+        gap: 10px;
+        padding: 11px 16px;
+        align-items: center;
+      }
+      .sheet__h {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--dim);
+        background: var(--paper-3);
+        border-bottom: 1px solid var(--rule);
+      }
+      .sheet__r {
+        border-top: 1px solid var(--rule-2);
+        font-size: 14px;
+        opacity: 0;
+        transform: translateY(4px);
+        transition:
+          opacity 0.34s var(--ease),
+          transform 0.34s var(--ease);
+      }
+      .sheet__r:first-of-type {
+        border-top: 0;
+      }
+      .sheet__r.on {
+        opacity: 1;
+        transform: none;
+      }
+      .sheet__r span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .sheet__r .n {
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .sheet__r .p {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--ink-2);
+      }
+      .sheet__r .c {
+        color: var(--muted);
+      }
+      .sheet__r .ok {
+        color: var(--green-deep);
+        font-weight: 700;
+        font-family: var(--mono);
+        font-size: 12.5px;
+      }
+      .sheet__r .no {
+        color: #c2bcb1;
+        font-family: var(--mono);
+        font-size: 12.5px;
+      }
+      .sheet__foot {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        padding: 13px 16px;
+        border-top: 1px solid var(--rule);
+        background: var(--paper);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--dim);
+      }
+
+      /* =========================================================================
+   6. FAIXA DE NÚMEROS
+   ========================================================================= */
+      .nums {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        border-bottom: 1.5px solid var(--ink);
+      }
+      .nums div {
+        padding: 30px 26px;
+        border-left: 1px solid var(--rule);
+      }
+      .nums div:first-child {
+        border-left: 0;
+      }
+      .nums b {
+        display: block;
+        font-family: var(--display);
+        font-size: clamp(30px, 3.6vw, 42px);
+        font-weight: 800;
+        letter-spacing: -0.05em;
+        line-height: 1;
+      }
+      .nums span {
+        display: block;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-top: 10px;
+      }
+
+      /* =========================================================================
+   7. PAR (cabeçalho pendurado + conteúdo)
+   ========================================================================= */
+      .pair {
+        display: grid;
+        grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+        gap: clamp(36px, 6vw, 88px);
+        align-items: start;
+      }
+      .pair__aside {
+        position: sticky;
+        top: 104px;
+      }
+      .pair__aside .eyebrow {
+        margin-bottom: 20px;
+      }
+
+      /* =========================================================================
+   8. LISTAS EDITORIAIS
+   ========================================================================= */
+      .elist {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .elist > li {
+        padding: 28px 0;
+        border-top: 1px solid var(--rule);
+        display: grid;
+        grid-template-columns: 38px 1fr;
+        gap: 18px;
+      }
+      .elist > li:last-child {
+        border-bottom: 1px solid var(--rule);
+      }
+      .elist .ix {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--dim);
+        padding-top: 5px;
+        letter-spacing: 0.06em;
+      }
+      .elist h3 {
+        margin-bottom: 8px;
+      }
+      .elist p {
+        color: var(--muted);
+        font-size: 15.5px;
+        max-width: 52ch;
+      }
+      .elist .x {
+        color: var(--red);
+        font-family: var(--mono);
+        font-weight: 700;
+      }
+
+      /* passos */
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .steps > div {
+        padding: 30px 26px 6px;
+        border-left: 1px solid var(--rule);
+      }
+      .steps > div:first-child {
+        border-left: 0;
+        padding-left: 0;
+      }
+      .steps .n {
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--green-deep);
+        display: block;
+        margin-bottom: 18px;
+      }
+      .steps h3 {
+        margin-bottom: 10px;
+      }
+      .steps p {
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .steps code {
+        font-family: var(--mono);
+        font-size: 12.5px;
+        background: var(--paper-3);
+        padding: 1px 6px;
+        border-radius: 3px;
+      }
+
+      /* =========================================================================
+   9. BENTO DE RECURSOS
+   ========================================================================= */
+      .bento {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 0;
+      }
+      .bento__it {
+        padding: 30px 28px 34px;
+        border-left: 1px solid var(--rule);
+        border-bottom: 1px solid var(--rule);
+      }
+      .bento__it:first-child {
+        border-left: 0;
+      }
+      .bento__it h3 {
+        font-size: 19px;
+        margin-bottom: 9px;
+      }
+      .bento__it p {
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .bento__it--4 {
+        grid-column: span 4;
+      }
+      .bento__it--5 {
+        grid-column: span 5;
+      }
+      .bento__it--7 {
+        grid-column: span 7;
+      }
+      .bento__it--12 {
+        grid-column: span 12;
+      }
+      .bento__ico {
+        width: 38px;
+        height: 38px;
+        border-radius: 9px;
+        display: grid;
+        place-items: center;
+        background: var(--paper-3);
+        color: var(--ink);
+        margin-bottom: 20px;
+      }
+      /* destaque invertido: o recurso-assinatura */
+      .bento__it--dark {
+        background: var(--ink);
+        color: #fff;
+        border-color: var(--ink);
+      }
+      .bento__it--dark h3 {
+        color: #fff;
+      }
+      .bento__it--dark p {
+        color: #b7bcc4;
+      }
+      .bento__it--dark .bento__ico {
+        background: var(--green);
+        color: #04240f;
+      }
+      .bento__it--dark .badge-g {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: #04240f;
+        background: var(--green);
+        padding: 5px 11px;
+        border-radius: 100px;
+        margin-bottom: 18px;
+      }
+      .bento__cmp {
+        margin-top: 22px;
+        border-top: 1px solid rgba(255, 255, 255, 0.18);
+        padding-top: 16px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: #8e949d;
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+      }
+      .bento__cmp b {
+        color: #fff;
+      }
+
+      /* =========================================================================
+   10. TABELA DE DADOS
+   ========================================================================= */
+      .dt {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14.5px;
+        background: var(--paper-2);
+        border: 1.5px solid var(--ink);
+        border-radius: var(--r-md);
+        overflow: hidden;
+      }
+      .dt th,
+      .dt td {
+        padding: 13px 16px;
+        text-align: left;
+        border-bottom: 1px solid var(--rule-2);
+        white-space: nowrap;
+      }
+      .dt thead th {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #fff;
+        background: var(--ink);
+        font-weight: 400;
+        border-bottom: 0;
+      }
+      .dt tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      .dt td {
+        font-family: var(--mono);
+        font-size: 13px;
+      }
+      .dt td:first-child {
+        font-family: var(--body);
+        font-size: 14.5px;
+        font-weight: 600;
+        white-space: normal;
+      }
+      .dt tbody tr:nth-child(even) {
+        background: var(--paper);
+      }
+
+      /* =========================================================================
+   11. COMPARATIVO
+   ========================================================================= */
+      .cmp {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 16px;
+        border-top: 1.5px solid var(--ink);
+        border-bottom: 1.5px solid var(--ink);
+      }
+      .cmp th,
+      .cmp td {
+        padding: 20px 18px;
+        text-align: left;
+        vertical-align: top;
+        border-bottom: 1px solid var(--rule-2);
+      }
+      .cmp tbody tr:last-child th,
+      .cmp tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      .cmp thead th {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--dim);
+        font-weight: 400;
+        border-bottom: 1px solid var(--rule);
+        padding-bottom: 14px;
+      }
+      .cmp thead th:last-child {
+        color: var(--green-deep);
+      }
+      .cmp tbody th {
+        font-weight: 600;
+        width: 24%;
+        font-size: 15.5px;
+        letter-spacing: -0.01em;
+      }
+      .cmp td:first-of-type {
+        color: var(--dim);
+      }
+      .cmp td:last-of-type {
+        font-weight: 600;
+      }
+      .cmp .mk {
+        font-family: var(--mono);
+        font-weight: 700;
+        margin-right: 10px;
+      }
+      .cmp .mk--x {
+        color: var(--red);
+      }
+      .cmp .mk--v {
+        color: var(--green-deep);
+      }
+
+      /* =========================================================================
+   12. PREÇO (seção invertida — o único bloco escuro da página)
+   ========================================================================= */
+      .price-sec {
+        background: var(--ink);
+        color: #fff;
+        padding: clamp(64px, 8vw, 110px) 0;
+      }
+      .price-sec .eyebrow {
+        color: var(--green);
+      }
+      .price-sec .eyebrow::before {
+        background: var(--green);
+      }
+      .price-sec h2 {
+        color: #fff;
+      }
+      .price-sec .lede {
+        color: #a9afb8;
+      }
+      .price-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: clamp(40px, 6vw, 80px);
+        align-items: start;
+        margin-top: clamp(40px, 5vw, 60px);
+      }
+      .price-amt {
+        font-family: var(--display);
+        font-weight: 800;
+        letter-spacing: -0.055em;
+        line-height: 0.86;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+      .price-amt .c {
+        font-size: 26px;
+        color: #8e949d;
+        margin-top: 14px;
+      }
+      .price-amt .n {
+        font-size: clamp(76px, 11vw, 128px);
+        color: #fff;
+      }
+      .price-amt .d {
+        font-size: clamp(30px, 4.4vw, 48px);
+        color: #8e949d;
+        align-self: flex-end;
+        margin-bottom: 12px;
+      }
+      .price-once {
+        font-family: var(--mono);
+        font-size: 12.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #8e949d;
+        margin-bottom: 30px;
+      }
+      .price-in {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .price-in > li {
+        display: flex;
+        gap: 14px;
+        padding: 15px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.13);
+        font-size: 15.5px;
+        color: #c9cdd4;
+        align-items: flex-start;
+      }
+      .price-in > li:last-child {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+      }
+      .price-in svg {
+        color: var(--green);
+        flex: none;
+        margin-top: 3px;
+      }
+      .price-in b {
+        color: #fff;
+        font-weight: 600;
+      }
+      .price-side {
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 10px;
+        padding: 28px;
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .price-side h4 {
+        color: #fff;
+        margin-bottom: 6px;
+      }
+      .price-side .micro {
+        display: block;
+        margin-bottom: 20px;
+      }
+      .price-side .deliver {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .price-side .deliver li {
+        display: flex;
+        gap: 12px;
+        padding: 11px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 15px;
+        color: #c9cdd4;
+        align-items: flex-start;
+      }
+      .price-side .deliver li:first-child {
+        border-top: 0;
+      }
+      .price-side .deliver svg {
+        color: var(--green);
+        flex: none;
+        margin-top: 3px;
+      }
+
+      /* =========================================================================
+   13. FAQ
+   ========================================================================= */
+      .faq details {
+        border-top: 1px solid var(--rule);
+        border-bottom: 1px solid var(--rule);
+      }
+      .faq summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 24px 46px 24px 0;
+        position: relative;
+        font-family: var(--display);
+        font-size: 19px;
+        font-weight: 600;
+        letter-spacing: -0.025em;
+        line-height: 1.25;
+        transition: color 0.16s var(--ease);
+      }
+      .faq summary::-webkit-details-marker {
+        display: none;
+      }
+      .faq summary:hover {
+        color: var(--blue);
+      }
+      .faq summary::after,
+      .faq summary::before {
+        content: "";
+        position: absolute;
+        right: 6px;
+        top: 34px;
+        width: 16px;
+        height: 1.8px;
+        background: var(--ink);
+        transition:
+          transform 0.24s var(--ease),
+          opacity 0.24s var(--ease);
+      }
+      .faq summary::before {
+        transform: rotate(90deg);
+      }
+      .faq details[open] summary::before {
+        transform: rotate(0);
+        opacity: 0;
+      }
+      .faq details[open] summary {
+        color: var(--ink);
+      }
+      .faq__a {
+        padding: 0 46px 26px 0;
+        color: var(--muted);
+        font-size: 16px;
+        max-width: 62ch;
+      }
+      .faq__a code {
+        font-family: var(--mono);
+        font-size: 13.5px;
+        background: var(--paper-3);
+        padding: 1px 6px;
+        border-radius: 3px;
+      }
+
+      /* =========================================================================
+   14. CTA FINAL + FOOTER
+   ========================================================================= */
+      .final {
+        text-align: center;
+      }
+      .final h2 {
+        margin: 0 auto;
+        max-width: 19ch;
+      }
+      .final .lede {
+        margin: 26px auto 0;
+      }
+      .final .hero__ctas {
+        justify-content: center;
+        margin-top: 34px;
+      }
+      .final .hero__micro {
+        justify-content: center;
+      }
+
+      .foot {
+        border-top: 1.5px solid var(--ink);
+        padding: 44px 0 56px;
+      }
+      .foot__top {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .foot p {
+        font-size: 14px;
+        color: var(--muted);
+        max-width: 58ch;
+        line-height: 1.55;
+      }
+      .foot nav {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+      }
+      .foot nav a {
+        font-size: 14.5px;
+        color: var(--muted);
+        text-decoration: none;
+      }
+      .foot nav a:hover {
+        color: var(--ink);
+      }
+      .foot__bot {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px 28px;
+        justify-content: space-between;
+        margin-top: 32px;
+        padding-top: 22px;
+        border-top: 1px solid var(--rule-2);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--dim);
+      }
+
+      /* =========================================================================
+         15. ANIMAÇÕES DE SCROLL
+         ========================================================================= */
+      /* 15.1 — barra de progresso de leitura */
+      .scrollbar {
+        position: fixed;
+        inset: 0 0 auto 0;
+        height: 3px;
+        z-index: 90;
+        pointer-events: none;
+      }
+      .scrollbar i {
+        display: block;
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(90deg, var(--green-deep), var(--green));
+        transform: scaleX(0);
+        transform-origin: 0 50%;
+        will-change: transform;
+      }
+      /* 15.2 — header que encolhe ao rolar */
+      .nav,
+      .nav__in {
+        transition:
+          height 0.35s var(--ease),
+          box-shadow 0.35s var(--ease);
+      }
+      .nav.is-stuck .nav__in {
+        height: 58px;
+      }
+      .nav.is-stuck {
+        box-shadow: 0 14px 30px -24px rgba(0, 0, 0, 0.45);
+      }
+      /* 15.3 — revelação em cortina, para títulos */
+      .rv-clip {
+        clip-path: inset(0 0 103% 0);
+        transform: translateY(34px);
+        transition:
+          clip-path 0.9s var(--ease-out),
+          transform 0.9s var(--ease-out);
+      }
+      .rv-clip.in {
+        clip-path: inset(0 -30% -30% 0);
+        transform: none;
+      }
+      /* 15.4 — régua que se desenha na horizontal */
+      .draw {
+        position: relative;
+      }
+      .draw::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: -1.5px;
+        height: 1.5px;
+        background: var(--ink);
+        transform: scaleX(0);
+        transform-origin: 0 50%;
+        transition: transform 1.1s var(--ease-out) 0.12s;
+      }
+      .draw.in::before {
+        transform: scaleX(1);
+      }
+      /* 15.5 — escalonamento dos filhos */
+      [data-stagger] > * {
+        opacity: 0;
+        transform: translateY(24px);
+        transition:
+          opacity 0.62s var(--ease-out),
+          transform 0.62s var(--ease-out);
+      }
+      [data-stagger].in > * {
+        opacity: 1;
+        transform: none;
+      }
+      /* 15.6 — parallax */
+      .parallax {
+        will-change: transform;
+      }
+      /* 15.7 — contadores em caixa alta alinhada */
+      .nums b {
+        font-variant-numeric: tabular-nums;
+      }
+      /* 15.8 — destaque de linha na tabela */
+      .dt tbody tr {
+        transition: background-color 0.18s var(--ease);
+      }
+      .dt tbody tr:hover {
+        background: var(--green-wash);
+      }
+      /* 15.9 — sublinhado animado no rodapé */
+      .foot nav a {
+        background-image: linear-gradient(var(--ink), var(--ink));
+        background-size: 0 1.5px;
+        background-position: 0 100%;
+        background-repeat: no-repeat;
+        transition: background-size 0.24s var(--ease);
+      }
+      .foot nav a:hover {
+        background-size: 100% 1.5px;
+      }
+      /* 15.10 — reveal base */
+      .rv {
+        opacity: 0;
+        transform: translateY(20px);
+        transition:
+          opacity 0.7s var(--ease-out),
+          transform 0.7s var(--ease-out);
+      }
+      .rv.in {
+        opacity: 1;
+        transform: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.001ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.001ms !important;
+        }
+        .rv,
+        .rv-clip,
+        [data-stagger] > * {
+          opacity: 1 !important;
+          transform: none !important;
+          clip-path: none !important;
+        }
+        .draw::before {
+          transform: scaleX(1);
+        }
+        .parallax {
+          transform: none !important;
+        }
+      }
+
+      /* =========================================================================
+   16. RESPONSIVO
+   ========================================================================= */
+      @media (max-width: 1040px) {
+        .hero__row {
+          grid-template-columns: 1fr;
+          align-items: start;
+          gap: 34px;
+        }
+        .price-chip {
+          max-width: 340px;
+        }
+        .pair {
+          grid-template-columns: 1fr;
+          gap: 36px;
+        }
+        .pair__aside {
+          position: static;
+        }
+        .steps {
+          grid-template-columns: 1fr 1fr;
+        }
+        .steps > div {
+          padding-left: 22px;
+        }
+        .steps > div:nth-child(odd) {
+          border-left: 0;
+          padding-left: 0;
+        }
+        .bento__it--4 {
+          grid-column: span 6;
+        }
+        .bento__it--5 {
+          grid-column: span 6;
+        }
+        .bento__it--7 {
+          grid-column: span 12;
+        }
+        .price-grid {
+          grid-template-columns: 1fr;
+        }
+        .nav__links {
+          display: none;
+        }
+      }
+      @media (max-width: 760px) {
+        body {
+          font-size: 16px;
+        }
+        .nums {
+          grid-template-columns: 1fr 1fr;
+        }
+        .nums div {
+          padding: 22px 18px;
+          border-top: 1px solid var(--rule);
+        }
+        .nums div:nth-child(-n + 2) {
+          border-top: 0;
+        }
+        .nums div:nth-child(odd) {
+          border-left: 0;
+        }
+        .steps {
+          grid-template-columns: 1fr;
+        }
+        .steps > div {
+          border-left: 0;
+          border-bottom: 1px solid var(--rule);
+          padding: 24px 0;
+        }
+        .bento__it {
+          grid-column: span 12;
+          border-left: 0;
+          padding: 24px 0;
+        }
+        .bento__it--dark {
+          padding: 26px 22px;
+          border-left: 0;
+        }
+        .tools {
+          grid-template-columns: 1fr 1fr;
+        }
+        .tools .fld:first-child {
+          grid-column: 1/-1;
+        }
+        .sheet__h,
+        .sheet__r {
+          grid-template-columns: 1.5fr 1fr 0.9fr;
+          padding: 10px 12px;
+          font-size: 13px;
+        }
+        .sheet__h span:nth-child(4),
+        .sheet__r .c,
+        .sheet__h span:nth-child(5),
+        .sheet__r .no {
+          display: none;
+        }
+        .hero__ctas .btn {
+          width: 100%;
+        }
+        .price-side {
+          padding: 22px;
+        }
+        .cmp thead {
+          display: none;
+        }
+        .cmp,
+        .cmp tbody,
+        .cmp tr,
+        .cmp td,
+        .cmp th {
+          display: block;
+          width: 100%;
+        }
+        .cmp tbody th {
+          border-bottom: 0;
+          padding-bottom: 2px;
+        }
+        .cmp td {
+          border-bottom: 0;
+          padding-top: 2px;
+          padding-bottom: 18px;
+        }
+        .cmp td::before {
+          content: attr(data-lbl);
+          display: block;
+          font-family: var(--mono);
+          font-size: 9.5px;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          color: var(--dim);
+          margin-bottom: 6px;
+        }
+        .dt {
+          font-size: 13px;
+        }
+        .dt th,
+        .dt td {
+          padding: 10px 10px;
+        }
+        .sheet {
+          overflow-x: auto;
+        }
+        .win {
+          box-shadow: 7px 7px 0 -2px var(--paper-3);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- barra de progresso de leitura -->
+    <div class="scrollbar" aria-hidden="true"><i id="progress"></i></div>
+
+    <!-- ══════════════ HEADER ══════════════ -->
+    <header class="nav">
+      <div class="wrap nav__in">
+        <a class="brand" href="/landing">
+          <span class="brand__mark" aria-hidden="true">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+              <circle cx="12" cy="10" r="2.6" />
+            </svg>
+          </span>
+          <span>Buscador<em>Google Maps</em></span>
+        </a>
+        <nav class="nav__links" aria-label="Seções">
+          <a href="#problema">O problema</a>
+          <a href="#como">Como funciona</a>
+          <a href="#recursos">Recursos</a>
+          <a href="#preco">Preço</a>
+          <a href="#duvidas">Dúvidas</a>
+        </nav>
+        <a class="btn btn--wa btn--sm" data-wa href="#preco"
+          >Comprar — R$ 29,90</a
+        >
+      </div>
+    </header>
+
+    <main>
+      <!-- ══════════════ HERO ══════════════ -->
+      <section class="hero">
+        <div class="wrap">
+          <div class="rv">
+            <span class="eyebrow">Prospecção local · Windows · sem API</span>
+
+            <h1>
+              Digite o segmento<br />
+              e a cidade.<br />
+              <em>Receba a lista com telefone.</em>
+            </h1>
+
+            <div class="hero__row">
+              <div>
+                <p class="lede">
+                  O buscador abre o Google Maps, lê nome, telefone, endereço,
+                  CEP e site de cada empresa da busca,
+                  <span class="mark strong">descarta quem não tem telefone</span
+                  >, tira a duplicata e entrega tudo em Excel. Dois campos de
+                  texto, três minutos.
+                </p>
+                <div class="hero__ctas" style="margin-top: 30px">
+                  <a class="btn btn--wa btn--lg" data-wa href="#preco">
+                    <svg
+                      width="19"
+                      height="19"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15s-.77.96-.94 1.16c-.17.2-.35.22-.64.08a8.2 8.2 0 0 1-2.42-1.49 9.1 9.1 0 0 1-1.67-2.08c-.17-.3 0-.46.13-.6.14-.15.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.53.08-.8.37s-1.04 1.02-1.04 2.48 1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.23 1.36.19 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.28.18-1.42-.07-.13-.27-.2-.57-.34Z"
+                      />
+                      <path
+                        d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.87 9.87 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2Zm0 18.02h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.36c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.83c0 4.54-3.7 8.21-8.24 8.21Z"
+                      />
+                    </svg>
+                    Quero o acesso
+                  </a>
+                  <a class="btn btn--line btn--lg" data-mail href="#preco"
+                    >Enviar por e-mail</a
+                  >
+                </div>
+                <ul class="hero__micro">
+                  <li>Download em minutos</li>
+                  <li>7 dias de garantia</li>
+                  <li>Atualizações grátis</li>
+                  <li>Sem assinatura</li>
+                </ul>
+              </div>
+
+              <aside class="price-chip" aria-label="Preço">
+                <span class="micro">Preço único</span>
+                <b data-preco>R$ 29,90</b>
+                <em
+                  >Pagamento único, via Pix, boleto ou transferência. Você fica
+                  com o programa — sem mensalidade.</em
+                >
+              </aside>
+            </div>
+          </div>
+
+          <!-- ───── o produto ───── -->
+          <div class="product parallax" id="mock">
+            <div
+              class="win rv-clip"
+              role="img"
+              aria-label="Tela do buscador: busca por oficinas em Campinas, com lista se formando ao vivo, telefone de todas as empresas e verificação de WhatsApp."
+            >
+              <div class="win__bar" aria-hidden="true">
+                <i></i><i></i><i></i>
+                <span class="win__url">localhost:8000</span>
+              </div>
+              <div class="win__body">
+                <div class="tools">
+                  <div class="fld"><span>Segmento</span><b>Oficinas</b></div>
+                  <div class="fld"><span>Cidade</span><b>Campinas</b></div>
+                  <div class="fld"><span>Máximo</span><b>120</b></div>
+                </div>
+                <div class="tools__btns">
+                  <span class="tb">Iniciar busca</span>
+                  <span class="tb tb--out">Exportar Excel</span>
+                  <span class="tag tag--g">somente com telefone</span>
+                  <span class="tag tag--g">WhatsApp conectado</span>
+                </div>
+
+                <div class="live">
+                  <span>coletando…</span>
+                  <span class="live__track"
+                    ><i class="live__fill" id="fill"></i
+                  ></span>
+                  <span class="live__n"
+                    >Encontrados: <b id="found">0</b> &nbsp;·&nbsp; Processados:
+                    <b id="done">0</b></span
+                  >
+                </div>
+
+                <div class="sheet">
+                  <div class="sheet__h">
+                    <span>Nome</span><span>Telefone</span><span>Cidade</span
+                    ><span>WhatsApp</span><span>Status</span>
+                  </div>
+                  <div class="sheet__r" data-row>
+                    <span class="n">Oficina do Zezinho</span
+                    ><span class="p">(19) 3232-1100</span
+                    ><span class="c">Campinas</span
+                    ><span class="ok">verificado</span
+                    ><span class="c">novo</span>
+                  </div>
+                  <div class="sheet__r" data-row>
+                    <span class="n">Clínica Vida Plena</span
+                    ><span class="p">(19) 3481-7720</span
+                    ><span class="c">Sumaré</span
+                    ><span class="ok">verificado</span
+                    ><span class="c">novo</span>
+                  </div>
+                  <div class="sheet__r" data-row>
+                    <span class="n">Pneu &amp; Cia Ltda</span
+                    ><span class="p">(19) 3245-9080</span
+                    ><span class="c">Hortolândia</span
+                    ><span class="ok">verificado</span
+                    ><span class="c">contatado</span>
+                  </div>
+                  <div class="sheet__r" data-row>
+                    <span class="n">Restaurante do Gaúcho</span
+                    ><span class="p">(19) 3255-4411</span
+                    ><span class="c">Campinas</span
+                    ><span class="ok">verificado</span
+                    ><span class="c">respondeu</span>
+                  </div>
+                  <div class="sheet__r" data-row>
+                    <span class="n">Studio Cabelo</span
+                    ><span class="p">(19) 3231-6620</span
+                    ><span class="c">Paulínia</span
+                    ><span class="ok">verificado</span
+                    ><span class="c">novo</span>
+                  </div>
+                  <div class="sheet__r" data-row>
+                    <span class="n">Pet Shop Amigo</span
+                    ><span class="p">(19) 3845-2233</span
+                    ><span class="c">Barão Geraldo</span
+                    ><span class="no">sem WhatsApp</span
+                    ><span class="c">novo</span>
+                  </div>
+                </div>
+
+                <div class="sheet__foot">
+                  <span>8 colunas na exportação</span>
+                  <span>duplicatas removidas</span>
+                  <span>sem telefone descartadas</span>
+                </div>
+              </div>
+            </div>
+
+            <p class="product__cap rv">
+              <span
+                >É esta tela que você recebe no PC:
+                <b>filtre por segmento e cidade</b>, veja a lista se formando ao
+                vivo e baixe o Excel com o WhatsApp já verificado.</span
+              >
+              <span class="sp">Tela real · versão 2026</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ NÚMEROS ══════════════ -->
+      <section style="padding: 0">
+        <div class="wrap">
+          <div class="nums draw rv" data-stagger>
+            <div><b data-count="0">R$ 0</b><span>de API key</span></div>
+            <div><b data-count="500">0</b><span>por busca</span></div>
+            <div><b data-count="8">0</b><span>colunas no Excel</span></div>
+            <div><b data-count="0">0</b><span>instalação</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ PROBLEMA ══════════════ -->
+      <section id="problema" class="rule">
+        <div class="wrap pair">
+          <div class="pair__aside rv">
+            <span class="eyebrow">O custo do método manual</span>
+            <h2 class="sec-head">Você já perdeu uma tarde inteira nisso.</h2>
+            <p class="lede" style="margin-top: 22px">
+              Abrir o Maps, dar zoom, copiar, colar, formatar telefone, conferir
+              duplicata, repetir. E no fim ainda sobra o número que não tem
+              WhatsApp.
+            </p>
+          </div>
+
+          <ul class="elist rv">
+            <li>
+              <span class="ix">01</span>
+              <div>
+                <h3>Copiar e colar, um por um</h3>
+                <p>
+                  Trinta empresas levam duas horas se for na mão. Cem levam o
+                  fim de semana — e a lista já nasce desatualizada quando você
+                  termina.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="ix">02</span>
+              <div>
+                <h3>Pagar API para o telefone não vir</h3>
+                <p>
+                  A Places API cobra por requisição e devolve a maioria dos
+                  lugares sem telefone. Você paga para descobrir que o dado
+                  simplesmente não estava lá.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="ix">03</span>
+              <div>
+                <h3>Mensagem no vazio</h3>
+                <p>
+                  Boa parte dos telefones de loja não tem WhatsApp. Prospectar
+                  sem verificar antes é
+                  <span class="x">desperdício de tempo e de credibilidade</span>
+                  com quem você queria convencer.
+                </p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ══════════════ COMO FUNCIONA ══════════════ -->
+      <section id="como" class="rule">
+        <div class="wrap">
+          <div class="sec-head rv">
+            <span class="eyebrow">Como funciona</span>
+            <h2>Quatro passos. Só o terceiro é difícil — e ele é seu.</h2>
+          </div>
+
+          <div class="steps draw rv" data-stagger>
+            <div>
+              <span class="n">01</span>
+              <h3>Baixa e abre</h3>
+              <p>
+                Um arquivo <code>.exe</code> de 165 MB. Dois cliques e a tela
+                abre no navegador. Sem Python, sem terminal, sem instalar nada.
+              </p>
+            </div>
+            <div>
+              <span class="n">02</span>
+              <h3>Escreve a busca</h3>
+              <p>
+                Preenche segmento e cidade — <code>Oficinas</code> +
+                <code>Campinas</code> — e o termo de busca é montado sozinho.
+              </p>
+            </div>
+            <div>
+              <span class="n">03</span>
+              <h3>Coleta e descarta o resto</h3>
+              <p>
+                O navegador lê nome, telefone, endereço, CEP e site. Empresa sem
+                telefone sai da lista. Telefone ou nome repetido também.
+              </p>
+            </div>
+            <div>
+              <span class="n">04</span>
+              <h3>Exporta e abre o WhatsApp</h3>
+              <p>
+                Baixa o Excel e dispara a mensagem com <code>{nome}</code>,
+                <code>{cidade}</code> e <code>{telefone}</code> já preenchidos.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ RECURSOS ══════════════ -->
+      <section id="recursos" class="rule">
+        <div class="wrap">
+          <div class="sec-head rv">
+            <span class="eyebrow">O que vem junto</span>
+            <h2>Nove coisas que fazem o trabalho pesado.</h2>
+          </div>
+
+          <div class="bento draw rv" data-stagger>
+            <!-- destaque: o recurso-assinatura -->
+            <div class="bento__it bento__it--7 bento__it--dark">
+              <span class="badge-g">O essencial</span>
+              <div class="bento__ico" aria-hidden="true">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M3 5h18l-7 8v6l-4 2v-8Z" />
+                </svg>
+              </div>
+              <h3>Só entra quem tem telefone</h3>
+              <p>
+                Este é o filtro que liga a busca a uma ação possível. A empresa
+                sem telefone é descartada na hora — não chega na sua planilha
+                para você descobrir tarde demais que não dá para ligar.
+              </p>
+              <div class="bento__cmp">
+                <span><b>312</b> empresas no resultado</span>
+                <span><b>128</b> com telefone</span>
+                <span><b>184</b> descartadas</span>
+              </div>
+            </div>
+
+            <div class="bento__it bento__it--5">
+              <div class="bento__ico" aria-hidden="true">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M15 3a9 9 0 1 0 6 6c-1 .6-1.6.6-2.2.1-.6-.5-1.4-.6-2-.2-.7.5-.8 1.5-.3 2.1.5.7.3 1.7-.5 2.1-.7.4-1.5.1-1.9-.6C14 12 13.6 11 12.7 11c-1.3 0-2.3 1-2.3 2.2 0 .4 0 .8-.1 1.2A9 9 0 0 0 15 3Z"
+                  />
+                </svg>
+              </div>
+              <h3>Verificação de WhatsApp em lote</h3>
+              <p>
+                Conecta uma vez por QR Code e o buscador marca quem tem WhatsApp
+                e quem não tem — antes de você gastar uma mensagem e sair da
+                lista com vergonha.
+              </p>
+            </div>
+
+            <div class="bento__it bento__it--4">
+              <div class="bento__ico" aria-hidden="true">
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="4" y="4" width="7" height="7" rx="1.5" />
+                  <rect x="13" y="4" width="7" height="7" rx="1.5" />
+                  <rect x="4" y="13" width="7" height="7" rx="1.5" />
+                  <path d="m16.5 12.5 2 2 4-4" />
+                </svg>
+              </div>
+              <h3>Dedupe automático</h3>
+              <p>
+                Mesmo telefone ou mesmo nome já cadastrado: fora. Dá para rodar
+                cinco cidades e juntar tudo sem repetir ninguém.
+              </p>
+            </div>
+
+            <div class="bento__it bento__it--4">
+              <div class="bento__ico" aria-hidden="true">
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="7.5" cy="15.5" r="4.5" />
+                  <path d="m10.7 12.3 7.8-7.8M16 5l3 3" />
+                </svg>
+              </div>
+              <h3>Sem API key</h3>
+              <p>
+                Roda pelo navegador, não pela API. Sem chave para cadastrar, sem
+                fatura, sem cota acabando no meio da campanha.
+              </p>
+            </div>
+
+            <div class="bento__it bento__it--4">
+              <div class="bento__ico" aria-hidden="true">
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z" />
+                </svg>
+              </div>
+              <h3>Até 500 por busca</h3>
+              <p>
+                Uma cidade inteira num nicho, ou um estado inteiro. Você escolhe
+                o teto e a ferramenta para na hora.
+              </p>
+            </div>
+
+            <div class="bento__it bento__it--4">
+              <div class="bento__ico" aria-hidden="true">
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
+                  />
+                </svg>
+              </div>
+              <h3>Excel e CSV</h3>
+              <p>
+                CSV com ponto e vírgula e UTF-8, que abre certo no Excel em
+                português sem mexer em nada.
+              </p>
+            </div>
+
+            <div class="bento__it bento__it--4">
+              <div class="bento__ico" aria-hidden="true">
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M20 14a2 2 0 0 1-2 2H8l-4 4V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2Z"
+                  />
+                  <path d="M8 8.5h8M8 11.5h5" />
+                </svg>
+              </div>
+              <h3>Mensagem com variável</h3>
+              <p>
+                Escreve
+                <code style="font-family: var(--mono); font-size: 13px"
+                  >{nome}</code
+                >, cidade e telefone no template. O texto sai pronto, lead por
+                lead.
+              </p>
+            </div>
+
+            <div class="bento__it bento__it--4">
+              <div class="bento__ico" aria-hidden="true">
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"
+                  />
+                </svg>
+              </div>
+              <h3>Listas salvas e mescláveis</h3>
+              <p>
+                Guarda com nome, recarrega quando quiser e junta uma busca nova
+                a uma lista que já existe.
+              </p>
+            </div>
+
+            <div class="bento__it bento__it--4">
+              <div class="bento__ico" aria-hidden="true">
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="2" y="3" width="20" height="14" rx="2" />
+                  <path d="M8 21h8M12 17v4" />
+                </svg>
+              </div>
+              <h3>Um arquivo só</h3>
+              <p>
+                Python, navegador e interface dentro do
+                <code style="font-family: var(--mono); font-size: 13px"
+                  >.exe</code
+                >. Mande para o time, sem instalar.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ O QUE SAI NA PLANILHA ══════════════ -->
+      <section class="rule">
+        <div class="wrap pair">
+          <div class="pair__aside rv">
+            <span class="eyebrow">O que sai na planilha</span>
+            <h2 class="sec-head">Oito colunas, preenchidas, sem repetido.</h2>
+            <p class="lede" style="margin-top: 22px">
+              Cada linha é uma empresa que tem telefone, com o endereço já
+              quebrado em cidade, estado e CEP. A planilha abre pronta para o
+              seu CRM ou para o WhatsApp.
+            </p>
+            <ul
+              class="deliver"
+              style="list-style: none; padding: 0; margin: 28px 0 0"
+            >
+              <li
+                style="
+                  display: flex;
+                  gap: 12px;
+                  padding: 11px 0;
+                  border-top: 1px solid var(--rule);
+                  font-size: 15.5px;
+                  color: var(--muted);
+                  align-items: flex-start;
+                "
+              >
+                <svg
+                  width="17"
+                  height="17"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--green-deep)"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  style="flex: none; margin-top: 3px"
+                  aria-hidden="true"
+                >
+                  <path d="m4 12 5.5 5.5L20 7" />
+                </svg>
+                <span
+                  ><b class="strong" style="color: var(--ink)"
+                    >Buscador_Google_Maps.exe</b
+                  >
+                  — Windows 10 e 11, dois cliques.</span
+                >
+              </li>
+              <li
+                style="
+                  display: flex;
+                  gap: 12px;
+                  padding: 11px 0;
+                  border-top: 1px solid var(--rule);
+                  font-size: 15.5px;
+                  color: var(--muted);
+                  align-items: flex-start;
+                "
+              >
+                <svg
+                  width="17"
+                  height="17"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--green-deep)"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  style="flex: none; margin-top: 3px"
+                  aria-hidden="true"
+                >
+                  <path d="m4 12 5.5 5.5L20 7" />
+                </svg>
+                <span
+                  >165 MB, sem instalação. Seus dados ficam na sua
+                  máquina.</span
+                >
+              </li>
+              <li
+                style="
+                  display: flex;
+                  gap: 12px;
+                  padding: 11px 0;
+                  border-top: 1px solid var(--rule);
+                  font-size: 15.5px;
+                  color: var(--muted);
+                  align-items: flex-start;
+                "
+              >
+                <svg
+                  width="17"
+                  height="17"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--green-deep)"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  style="flex: none; margin-top: 3px"
+                  aria-hidden="true"
+                >
+                  <path d="m4 12 5.5 5.5L20 7" />
+                </svg>
+                <span
+                  >Atualização sempre que o Google mudar a tela, sem novo
+                  pagamento.</span
+                >
+              </li>
+              <li
+                style="
+                  display: flex;
+                  gap: 12px;
+                  padding: 11px 0;
+                  border-top: 1px solid var(--rule);
+                  border-bottom: 1px solid var(--rule);
+                  font-size: 15.5px;
+                  color: var(--muted);
+                  align-items: flex-start;
+                "
+              >
+                <svg
+                  width="17"
+                  height="17"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--green-deep)"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  style="flex: none; margin-top: 3px"
+                  aria-hidden="true"
+                >
+                  <path d="m4 12 5.5 5.5L20 7" />
+                </svg>
+                <span>Suporte direto comigo no WhatsApp.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="rv" style="overflow-x: auto">
+            <table class="dt">
+              <caption
+                style="
+                  position: absolute;
+                  width: 1px;
+                  height: 1px;
+                  overflow: hidden;
+                  clip: rect(0 0 0 0);
+                "
+              >
+                Exemplo de planilha exportada
+              </caption>
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Telefone</th>
+                  <th>Cidade</th>
+                  <th>UF</th>
+                  <th>CEP</th>
+                  <th>Site</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Oficina do Zezinho</td>
+                  <td>(19) 3232-1100</td>
+                  <td>Campinas</td>
+                  <td>SP</td>
+                  <td>13015-000</td>
+                  <td>oficinazezinho.com.br</td>
+                </tr>
+                <tr>
+                  <td>Clínica Vida Plena</td>
+                  <td>(19) 3481-7720</td>
+                  <td>Sumaré</td>
+                  <td>SP</td>
+                  <td>13170-330</td>
+                  <td>vidaplena.com.br</td>
+                </tr>
+                <tr>
+                  <td>Pneu &amp; Cia Ltda</td>
+                  <td>(19) 3245-9080</td>
+                  <td>Hortolândia</td>
+                  <td>SP</td>
+                  <td>13184-120</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td>Restaurante do Gaúcho</td>
+                  <td>(19) 3255-4411</td>
+                  <td>Campinas</td>
+                  <td>SP</td>
+                  <td>13010-200</td>
+                  <td>gauchodopostol.com.br</td>
+                </tr>
+                <tr>
+                  <td>Studio Cabelo</td>
+                  <td>(19) 3231-6620</td>
+                  <td>Paulínia</td>
+                  <td>SP</td>
+                  <td>13140-010</td>
+                  <td>—</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="dt-swipe" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="15" height="15">
+                <path d="M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4" />
+              </svg>
+              Arraste a tabela para o lado
+            </p>
+            <p class="product__cap" style="margin-top: 14px">
+              <span
+                >Mais as colunas <b>Endereço</b> e <b>Google Maps</b>, com o
+                link direto da loja. A exportação sai em Excel ou CSV.</span
+              >
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ COMPARATIVO ══════════════ -->
+      <section id="comparativo" class="rule">
+        <div class="wrap">
+          <div class="sec-head rv">
+            <span class="eyebrow">Comparativo</span>
+            <h2>O mesmo serviço, de quatro jeitos.</h2>
+          </div>
+
+          <div class="rv" style="overflow-x: auto">
+            <table class="cmp">
+              <caption
+                style="
+                  position: absolute;
+                  width: 1px;
+                  height: 1px;
+                  overflow: hidden;
+                  clip: rect(0 0 0 0);
+                "
+              >
+                Comparação entre método manual e o buscador
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Etapa</th>
+                  <th scope="col">Do jeito manual</th>
+                  <th scope="col">Com o buscador</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Montar a lista</th>
+                  <td data-lbl="Manual">
+                    <span class="mk mk--x">✕</span>2 h para 30 empresas
+                  </td>
+                  <td data-lbl="Buscador">
+                    <span class="mk mk--v">✓</span>um campo e 3 min
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Telefone útil</th>
+                  <td data-lbl="Manual">
+                    <span class="mk mk--x">✕</span>você filtra na unha
+                  </td>
+                  <td data-lbl="Buscador">
+                    <span class="mk mk--v">✓</span>filtro ligado, dedupe feito
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Número no WhatsApp</th>
+                  <td data-lbl="Manual">
+                    <span class="mk mk--x">✕</span>testar um por um
+                  </td>
+                  <td data-lbl="Buscador">
+                    <span class="mk mk--v">✓</span>verificação em lote, os
+                    válidos marcados
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Custo por lista</th>
+                  <td data-lbl="Manual">
+                    <span class="mk mk--x">✕</span>horas da sua equipe
+                  </td>
+                  <td data-lbl="Buscador">
+                    <span class="mk mk--v">✓</span>zero, depois do acesso
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Entrega</th>
+                  <td data-lbl="Manual">
+                    <span class="mk mk--x">✕</span>planilha pela metade
+                  </td>
+                  <td data-lbl="Buscador">
+                    <span class="mk mk--v">✓</span>Excel pronto, com site e link
+                    do Maps
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ PREÇO ══════════════ -->
+      <section id="preco" class="price-sec">
+        <div class="wrap">
+          <div class="rv" style="max-width: 56ch">
+            <span class="eyebrow">Preço</span>
+            <h2>Um pagamento. Você fica com o programa.</h2>
+            <p class="lede" style="margin-top: 22px">
+              Sem assinatura, sem cobrança mensal, sem “plano profissional”
+              aparecendo depois.
+            </p>
+          </div>
+
+          <div class="price-grid">
+            <div class="rv">
+              <div class="price-amt">
+                <span class="c">R$</span><span class="n">29</span
+                ><span class="d">,90</span>
+              </div>
+              <p class="price-once">
+                Uma vez só · Pix, boleto ou transferência
+              </p>
+              <a class="btn btn--wa btn--lg btn--block" data-wa href="#preco">
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15s-.77.96-.94 1.16c-.17.2-.35.22-.64.08a8.2 8.2 0 0 1-2.42-1.49 9.1 9.1 0 0 1-1.67-2.08c-.17-.3 0-.46.13-.6.14-.15.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.53.08-.8.37s-1.04 1.02-1.04 2.48 1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.23 1.36.19 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.28.18-1.42-.07-.13-.27-.2-.57-.34Z"
+                  />
+                  <path
+                    d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.87 9.87 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2Zm0 18.02h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.36c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.83c0 4.54-3.7 8.21-8.24 8.21Z"
+                  />
+                </svg>
+                Quero comprar agora
+              </a>
+              <p
+                style="
+                  margin-top: 16px;
+                  font-size: 14.5px;
+                  color: #8e949d;
+                  text-align: center;
+                "
+              >
+                Prefere e-mail?
+                <a
+                  data-mail
+                  href="#preco"
+                  style="color: var(--green); font-weight: 600"
+                  >Peço o acesso por aqui</a
+                >.
+              </p>
+            </div>
+
+            <div class="price-side rv">
+              <h4>O que está incluso</h4>
+              <span class="micro">Acesso vitalício · 1 computador</span>
+              <ul class="deliver">
+                <li>
+                  <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m4 12 5.5 5.5L20 7" /></svg
+                  ><span>Download imediato depois da confirmação</span>
+                </li>
+                <li>
+                  <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m4 12 5.5 5.5L20 7" /></svg
+                  ><span
+                    >Filtro de telefone, dedupe e listas salvas liberados</span
+                  >
+                </li>
+                <li>
+                  <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m4 12 5.5 5.5L20 7" /></svg
+                  ><span>Verificação de WhatsApp em lote</span>
+                </li>
+                <li>
+                  <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m4 12 5.5 5.5L20 7" /></svg
+                  ><span>Atualizações futuras sem novo pagamento</span>
+                </li>
+                <li>
+                  <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m4 12 5.5 5.5L20 7" /></svg
+                  ><span
+                    ><b>7 dias de garantia</b> — testou, não funcionou, devolvo
+                    o valor</span
+                  >
+                </li>
+              </ul>
+              <a
+                class="btn btn--line btn--sm btn--block"
+                data-wa
+                href="#preco"
+                style="
+                  margin-top: 22px;
+                  border-color: rgba(255, 255, 255, 0.3);
+                  color: #fff;
+                "
+              >
+                Licença para a equipe
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ FAQ ══════════════ -->
+      <section id="duvidas" class="rule">
+        <div class="wrap pair">
+          <div class="pair__aside rv">
+            <span class="eyebrow">Dúvidas</span>
+            <h2 class="sec-head">O que todo mundo pergunta antes de pagar.</h2>
+            <p class="lede" style="margin-top: 22px">
+              Se a sua não estiver aqui, me chama no WhatsApp que eu respondo na
+              hora.
+            </p>
+            <a
+              class="btn btn--line btn--sm"
+              data-wa
+              href="#duvidas"
+              style="margin-top: 26px"
+              >Tirar dúvida no WhatsApp</a
+            >
+          </div>
+
+          <div class="faq draw rv" data-stagger>
+            <details open>
+              <summary>Preciso pagar a API do Google?</summary>
+              <p class="faq__a">
+                Não. A ferramenta funciona pelo navegador, não pela API. Não
+                existe chave para cadastrar nem cobrança por requisição.
+              </p>
+            </details>
+            <details>
+              <summary>Preciso instalar alguma coisa no computador?</summary>
+              <p class="faq__a">
+                Não. Você recebe um único arquivo <code>.exe</code> com o
+                Python, o navegador e a interface dentro. Copia para uma pasta,
+                dá dois cliques e abre. Em Windows 10 e 11.
+              </p>
+            </details>
+            <details>
+              <summary>Como eu recebo depois de pagar?</summary>
+              <p class="faq__a">
+                Você me chama no WhatsApp e, assim que o pagamento cai, mando o
+                link de download e o passo a passo. Costuma sair em poucos
+                minutos.
+              </p>
+            </details>
+            <details>
+              <summary>Funciona no celular, no Mac ou no Linux?</summary>
+              <p class="faq__a">
+                O executável é para Windows e não roda no celular. Para Mac ou
+                Linux é preciso instalar manualmente — se for o seu caso, me
+                chama antes que eu te oriento.
+              </p>
+            </details>
+            <details>
+              <summary>Em quantos computadores posso usar?</summary>
+              <p class="faq__a">
+                A compra vale para um computador. Para rodar numa rede, com
+                várias máquinas, me fale que eu monto um pacote com o número de
+                licenças que você precisar.
+              </p>
+            </details>
+            <details>
+              <summary>
+                E se o Google mudar a tela e parar de funcionar?
+              </summary>
+              <p class="faq__a">
+                É exatamente o motivo de o programa ser atualizado — e não de
+                você pagar de novo. O aviso aparece na tela e eu disponibilizo a
+                versão corrigida.
+              </p>
+            </details>
+            <details>
+              <summary>Os dados coletados são legais?</summary>
+              <p class="faq__a">
+                A ferramenta lê apenas informações públicas já exibidas no
+                Google Maps, sem senha e sem burlar CAPTCHA. O uso da lista é
+                responsabilidade de quem compra, seguindo a LGPD e a legislação
+                contra spam. Ela foi feita para você prospectar dentro da lei,
+                usando só o canal que a empresa deixou público.
+              </p>
+            </details>
+            <details>
+              <summary>Posso testar antes de decidir?</summary>
+              <p class="faq__a">
+                Você tem 7 dias de garantia incondicional. Rodou, não rendeu, me
+                chama que devolvo o valor.
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ CTA FINAL ══════════════ -->
+      <section class="final">
+        <div class="wrap rv">
+          <h2>
+            Quantas empresas têm telefone na sua cidade e no seu segmento?
+          </h2>
+          <p class="lede">
+            Você descobre em três minutos, e a lista sai pronta para o WhatsApp.
+          </p>
+          <div class="hero__ctas">
+            <a class="btn btn--wa btn--lg" data-wa href="#preco">
+              <svg
+                width="19"
+                height="19"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15s-.77.96-.94 1.16c-.17.2-.35.22-.64.08a8.2 8.2 0 0 1-2.42-1.49 9.1 9.1 0 0 1-1.67-2.08c-.17-.3 0-.46.13-.6.14-.15.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.53.08-.8.37s-1.04 1.02-1.04 2.48 1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.23 1.36.19 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.28.18-1.42-.07-.13-.27-.2-.57-.34Z"
+                />
+                <path
+                  d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.87 9.87 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2Zm0 18.02h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.36c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.83c0 4.54-3.7 8.21-8.24 8.21Z"
+                />
+              </svg>
+              Falar no WhatsApp
+            </a>
+            <a class="btn btn--line btn--lg" data-mail href="#preco"
+              >Enviar por e-mail</a
+            >
+          </div>
+          <ul class="hero__micro" style="margin-top: 30px">
+            <li>R$ 29,90 uma vez</li>
+            <li>7 dias de garantia</li>
+            <li>Resposta em minutos</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap">
+        <div class="foot__top">
+          <p>
+            Coleta de dados públicos exibidos no Google Maps, sem uso de API e
+            sem burla de verificação. O uso da lista é responsabilidade do
+            comprador — observe a LGPD e a legislação contra spam.
+          </p>
+          <nav aria-label="Rodapé">
+            <a href="#como">Como funciona</a>
+            <a href="#recursos">Recursos</a>
+            <a href="#preco">Preço</a>
+            <a data-wa href="#preco">Contato</a>
+          </nav>
+        </div>
+        <div class="foot__bot">
+          <span>Buscador de Empresas no Google Maps</span>
+          <span>Windows · sem API · pagamento único</span>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      /* ══════════════ CONFIGURAÇÃO — TROQUE AQUI OS CONTATOS ══════════════ */
+      const CFG = {
+        // >>> TROCAR: WhatsApp com DDI e SÓ DÍDIGITOS, ex.: 5511988887777 <<<
+        whatsapp: "5511999999999",
+        mensagemWa:
+          "Olá! Vi a página do Buscador de Empresas no Google Maps. Quero o acesso de R$ 29,90. Pode me passar as instruções?",
+        // >>> TROCAR pelo seu e-mail de venda <<<
+        email: "d.rodrigues23m@gmail.com",
+        assunto: "Acesso ao Buscador de Empresas no Google Maps — R$ 29,90",
+        corpoEmail:
+          "Olá!\n\nQuero o acesso ao Buscador de Empresas no Google Maps (R$ 29,90).\n\nMe chama no WhatsApp para eu receber as instruções.\n\nObrigado!",
+      };
+
+      const waLink =
+        "https://wa.me/" +
+        CFG.whatsapp +
+        "?text=" +
+        encodeURIComponent(CFG.mensagemWa);
+      const mailLink =
+        "mailto:" +
+        CFG.email +
+        "?subject=" +
+        encodeURIComponent(CFG.assunto) +
+        "&body=" +
+        encodeURIComponent(CFG.corpoEmail);
+
+      document.querySelectorAll("[data-wa]").forEach((a) => {
+        a.href = waLink;
+        a.target = "_blank";
+        a.rel = "noopener";
+      });
+      document.querySelectorAll("[data-mail]").forEach((a) => {
+        a.href = mailLink;
+      });
+
+      /* ═══════════════════════════════════════════════════════════════════
+         ANIMAÇÕES DE SCROLL
+         ═══════════════════════════════════════════════════════════════════ */
+      const reduce = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+
+      /* ---- 1. títulos ganham a revelação em cortina ---- */
+      document
+        .querySelectorAll("h2")
+        .forEach((h) => h.classList.add("rv-clip"));
+
+      /* ---- 2. revelação no scroll (base + cortina) ---- */
+      const reveals = document.querySelectorAll(".rv, .rv-clip");
+
+      /* abre um bloco: marca, escalona os filhos e dispara os contadores */
+      function reveal(el) {
+        if (el.classList.contains("in")) return;
+        el.classList.add("in");
+        if (el.hasAttribute("data-stagger")) {
+          Array.from(el.children).forEach((child, i) => {
+            child.style.transitionDelay = i * 85 + "ms";
+          });
+        }
+        el.querySelectorAll("[data-count]").forEach(count);
+      }
+
+      if (reduce || !("IntersectionObserver" in window)) {
+        /* o bloco @media do CSS já zera tudo visualmente */
+        reveals.forEach(reveal);
+        document.querySelectorAll("[data-count]").forEach(count);
+      } else {
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              if (!e.isIntersecting) return;
+              reveal(e.target);
+              io.unobserve(e.target);
+            });
+          },
+          { threshold: 0.12, rootMargin: "0px 0px -60px 0px" },
+        );
+        reveals.forEach((el) => io.observe(el));
+
+        /* ---- 2b. rede de segurança ----
+           Se o IntersectionObserver for estrangulado (aba em segundo plano,
+           máquina lenta, prefers-reduced-motion dinâmico), nenhum callback
+           dispara e o conteúdo ficaria invisível para sempre. Esta varredura
+           abre na mão tudo que já passou pela viewport e se encerra sozinha. */
+        const pending = Array.from(reveals);
+        (function sweep() {
+          for (let i = pending.length - 1; i >= 0; i--) {
+            const r = pending[i].getBoundingClientRect();
+            /* revela o que já chegou (ou passou) da borda de baixo da tela.
+               Não testar r.bottom > 0 aqui: um bloco já percorrido tem bottom
+               negativo e nunca seria revelado. */
+            if (r.top < window.innerHeight * 0.94) {
+              reveal(pending[i]);
+              pending.splice(i, 1);
+            }
+          }
+          if (pending.length) setTimeout(sweep, 700);
+        })();
+      }
+
+      /* ---- 3. contador da faixa de números ---- */
+      function count(el) {
+        const target = parseInt(el.dataset.count, 10) || 0;
+        /* preserva o prefixo (ex.: "R$ ") e só anima alvo > 0 */
+        const prefix = el.textContent.replace(/[\d.,]+/g, "").trim();
+        if (target <= 0) {
+          el.textContent = prefix ? prefix + " 0" : "0";
+          return;
+        }
+        if (reduce) {
+          el.textContent = target;
+          return;
+        }
+        const t0 = performance.now();
+        const dur = 1100;
+        /* trava de segurança: se o rAF for estrangulado (aba em segundo plano,
+           máquina lenta), o número ainda chega ao valor exato */
+        const guard = setTimeout(() => {
+          el.textContent = target;
+        }, dur + 60);
+        const step = (now) => {
+          const p = Math.min(1, (now - t0) / dur);
+          if (p >= 1) {
+            el.textContent = target; // snap exato no alvo
+            clearTimeout(guard);
+            return;
+          }
+          /* easeOutExpo — começa rápido, termina suave */
+          el.textContent = Math.round(target * (1 - Math.pow(2, -10 * p)));
+          requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      }
+
+      /* ---- 4. barra de progresso + header que encolhe + parallax ---- */
+      const bar = document.getElementById("progress");
+      const nav = document.querySelector(".nav");
+      const hero = document.querySelector(".product");
+      let ticking = false;
+
+      function onScroll() {
+        const y = window.scrollY;
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        const p = max > 0 ? Math.min(1, y / max) : 0;
+
+        if (bar) bar.style.transform = "scaleX(" + p.toFixed(4) + ")";
+        if (nav) nav.classList.toggle("is-stuck", y > 40);
+
+        /* parallax suave no mock do produto */
+        if (hero && !reduce) {
+          const r = hero.getBoundingClientRect();
+          const mid = r.top + r.height / 2 - window.innerHeight / 2;
+          const off = Math.max(-70, Math.min(70, -mid * 0.055));
+          hero.style.transform = "translate3d(0," + off.toFixed(1) + "px,0)";
+        }
+        ticking = false;
+      }
+
+      function requestTick() {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(onScroll);
+        }
+      }
+
+      window.addEventListener("scroll", requestTick, { passive: true });
+      window.addEventListener("resize", requestTick, { passive: true });
+      onScroll();
+
+      /* ══════════════ MOCK: a busca rodando ══════════════ */
+      const rows = Array.from(document.querySelectorAll("[data-row]"));
+      const fill = document.getElementById("fill");
+      const found = document.getElementById("found");
+      const done = document.getElementById("done");
+
+      if (rows.length && !reduce) {
+        const TOTAL = 128;
+        let i = 0;
+        const step = () => {
+          if (i < rows.length) {
+            /* as linhas ACUMULAM — é a lista se formando, não uma linha trocando */
+            rows[i].classList.add("on");
+            i++;
+            const ratio = i / rows.length;
+            fill.style.width = (ratio * 100).toFixed(0) + "%";
+            found.textContent = String(Math.round(TOTAL * ratio));
+            done.textContent = String(Math.round(TOTAL * ratio * 0.9));
+            setTimeout(step, 780);
+          } else {
+            /* segura a lista cheia, depois limpa e recomeça */
+            fill.style.width = "100%";
+            found.textContent = String(TOTAL);
+            done.textContent = "120";
+            setTimeout(() => {
+              rows.forEach((r) => r.classList.remove("on"));
+              fill.style.width = "0%";
+              found.textContent = "0";
+              done.textContent = "0";
+              i = 0;
+              setTimeout(step, 500);
+            }, 3000);
+          }
+        };
+        setTimeout(step, 800);
+      }
+    </script>
+  </body>
+</html>
